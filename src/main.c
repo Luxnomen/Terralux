@@ -41,7 +41,19 @@ int main() {
 
         // 3. Simple Movement
         if (IsKeyDown(KEY_W)) player.transform.pos = Vector3Add(player.transform.pos, Vector3Scale(forward, 0.1f));
+// Movement Vectors
+        // 'forward' is already calculated for the camera
+        Vector3 right = { sinf((player.transform.yaw - 90.0f) * DEG2RAD), 0, cosf((player.transform.yaw - 90.0f) * DEG2RAD) };
 
+        float speed = 0.2f;
+
+        // W and S (Forward/Backward)
+        if (IsKeyDown(KEY_W)) player.transform.pos = Vector3Add(player.transform.pos, Vector3Scale(forward, speed));
+        if (IsKeyDown(KEY_S)) player.transform.pos = Vector3Subtract(player.transform.pos, Vector3Scale(forward, speed));
+
+        // A and D (Left/Right)
+        if (IsKeyDown(KEY_A)) player.transform.pos = Vector3Subtract(player.transform.pos, Vector3Scale(right, speed));
+        if (IsKeyDown(KEY_D)) player.transform.pos = Vector3Add(player.transform.pos, Vector3Scale(right, speed));
         BeginDrawing();
             ClearBackground(SKYBLUE);
             BeginMode3D(camera);
