@@ -2,13 +2,23 @@
 #define ENGINE_H
 #include "raylib.h"
 
-// The Engine's definition of a Soldier
+// The "Transform" - Every Unreal Actor has this
 typedef struct {
     Vector3 position;
-    Vector3 velocity;
-    int helmetType;
-    int camoType;
-} Soldier;
+    Vector3 rotation;
+    Vector3 scale;
+} Transform;
 
-void UpdateSoldierPhysics(Soldier *s);
+// The "Entity" - The core of Frostbite/Unreal
+typedef struct {
+    Transform transform;
+    Vector3 velocity;
+    float mass;
+    bool isGrounded;
+} Entity;
+
+// Engine Core Systems
+void Engine_InitSystem();
+void Engine_ApplyGravity(Entity *e, float gravity);
+void Engine_ResolveMovement(Entity *e, Vector3 inputDir, float speed);
 #endif
