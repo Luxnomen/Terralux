@@ -2,21 +2,27 @@
 #define ENGINE_H
 #include "raylib.h"
 
+#define MAX_ENTITIES 100
+
 typedef struct {
     Vector3 pos; 
-    float yaw;   // Left/Right rotation
-    float pitch; // Up/Down rotation
+    float yaw;
+    float pitch;
 } EngineTransform;
 
 typedef struct {
     EngineTransform transform;
     Vector3 velocity;
-    bool isGrounded;
+    Color color;
+    bool active; // Is this object in the game right now?
 } Entity;
 
-void Engine_Init(Entity *e);
-void Engine_UpdatePhysics(Entity *e, Vector3 inputDir);
-// New: This function handles the mouse logic
-void Engine_UpdateLook(Entity *e, Vector2 mouseDelta, float sensitivity);
+typedef struct {
+    Entity entities[MAX_ENTITIES];
+    int count;
+} World;
 
+void Engine_InitWorld(World *w);
+void Engine_SpawnEntity(World *w, Vector3 position, Color color);
+void Engine_UpdateWorld(World *w, Entity *player);
 #endif
