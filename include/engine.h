@@ -2,13 +2,13 @@
 #define ENGINE_H
 #include "raylib.h"
 
+// The Engine's definition of a Soldier
 typedef struct {
     Vector3 position;
     Vector3 velocity;
-    float yaw;
-    float pitch;
-} Engine_Entity;
+    int helmetType;
+    int camoType;
+} Soldier;
 
-void Engine_Init(Engine_Entity *e);
-void Engine_Update(Engine_Entity *e);
+void UpdateSoldierPhysics(Soldier *s);
 #endif
