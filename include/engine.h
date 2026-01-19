@@ -2,23 +2,22 @@
 #define ENGINE_H
 #include "raylib.h"
 
-// The "Transform" - Every Unreal Actor has this
+// Renamed to EngineTransform to avoid Raylib conflicts
 typedef struct {
-    Vector3 position;
-    Vector3 rotation;
+    Vector3 pos;      // Shortened to pos for faster coding
+    Vector3 rot;
     Vector3 scale;
-} Transform;
+} EngineTransform;
 
-// The "Entity" - The core of Frostbite/Unreal
 typedef struct {
-    Transform transform;
+    EngineTransform transform;
     Vector3 velocity;
     float mass;
     bool isGrounded;
 } Entity;
 
-// Engine Core Systems
-void Engine_InitSystem();
+void Engine_Init(Entity *e);
 void Engine_ApplyGravity(Entity *e, float gravity);
 void Engine_ResolveMovement(Entity *e, Vector3 inputDir, float speed);
+
 #endif
