@@ -4,21 +4,19 @@
 
 typedef struct {
     Vector3 pos; 
-    Vector3 rot;
-    Vector3 scale;
+    float yaw;   // Left/Right rotation
+    float pitch; // Up/Down rotation
 } EngineTransform;
 
 typedef struct {
     EngineTransform transform;
     Vector3 velocity;
-    float mass;
-    float friction; // How fast we slow down
     bool isGrounded;
 } Entity;
 
 void Engine_Init(Entity *e);
-void Engine_ApplyGravity(Entity *e, float gravity);
-// We added friction and acceleration parameters here
-void Engine_ResolveMovement(Entity *e, Vector3 inputDir, float accel, float friction);
+void Engine_UpdatePhysics(Entity *e, Vector3 inputDir);
+// New: This function handles the mouse logic
+void Engine_UpdateLook(Entity *e, Vector2 mouseDelta, float sensitivity);
 
 #endif
