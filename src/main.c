@@ -1,72 +1,61 @@
 #include "engine.h"
 #include <math.h>
+#include <stdio.h>
 
 int main() {
-    InitWindow(1280, 800, "Terralux Engine - Fixed Controls");
+    InitWindow(1280, 800, "Terralux: The Collection Game");
     SetTargetFPS(60);
     DisableCursor();
 
-    World myWorld;
-    Engine_InitWorld(&myWorld);
+    // 1. Initialize Player
+    Player p = { (Vector3){0, 2, 0}, 0, 0, 100, 0 };
 
-    Engine_SpawnEntity(&myWorld, (Vector3){5, 1, 5}, RED);
-    Engine_SpawnEntity(&myWorld, (Vector3){-5, 1, 10}, BLUE);
-    Engine_SpawnEntity(&myWorld, (Vector3){0, 1, 15}, GREEN);
-
-    Entity player = {0};
-    player.transform.pos = (Vector3){0, 2, 0};
-    player.transform.yaw = 0.0f;
-    player.transform.pitch = 0.0f;
+    // 2. Define a "Goal" block
+    Vector3 goalPos = { 5, 1, 5 };
+    bool goalActive = true;
 
     while (!WindowShouldClose()) {
-        // 1. Mouse Look (Pitch and Yaw)
+        // --- UPDATE ---
         Vector2 mouseDelta = GetMousePositionDelta();
-        player.transform.yaw -= mouseDelta.x * 0.1f;
-        player.transform.pitch -= mouseDelta.y * 0.1f;
-        
-        // Clamp looking up/down so you don't flip over
-        if (player.transform.pitch > 89.0f) player.transform.pitch = 89.0f;
-        if (player.transform.pitch < -89.0f) player.transform.pitch = -89.0f;
+        p.yaw -= mouseDelta.x * 0.1f;
+        p.pitch -= mouseDelta.y * 0.1f;
 
-        // 2. Calculate Directional Vectors
-        Vector3 forward = {
-            sinf(player.transform.yaw * DEG2RAD),
-            0, // Keep movement on the flat ground
-            cosf(player.transform.yaw * DEG2RAD)
-        };
+        Vector3 forward = { sinf(p.yaw * DEG2RAD), 0, cosf(p.yaw * DEG2RAD) };
+        Vector3 right = { sinf((p.yaw + 90.0f) * DEG2RAD), 0, cosf((p.yaw + 90.0f) * DEG2RAD) };
 
-        Vector3 right = { 
-            sinf((player.transform.yaw + 90.0f) * DEG2RAD), 
-            0, 
-            cosf((player.transform.yaw + 90.0f) * DEG2RAD) 
-        };
+        if (IsKeyDown(KEY_W)) p.position = Vector3Add(p.position, Vector3Scale(forward, 0.15f));
+        if (IsKeyDown(KEY_S)) p.position = Vector3Subtract(p.position, Vector3Scale(forward, 0.15f));
+        if (IsKeyDown(KEY_A)) p.position = Vector3Subtract(p.position, Vector3Scale(right, 0.15f));
+        if (IsKeyDown(KEY_D)) p.position = Vector3Add(p.position, Vector3Scale(right, 0.15f));
 
-        // 3. Fixed Movement (Not Inverted)
-        float speed = 0.2f;
-        if (IsKeyDown(KEY_W)) player.transform.pos = Vector3Add(player.transform.pos, Vector3Scale(forward, speed));
-        if (IsKeyDown(KEY_S)) player.transform.pos = Vector3Subtract(player.transform.pos, Vector3Scale(forward, speed));
-        if (IsKeyDown(KEY_D)) player.transform.pos = Vector3Add(player.transform.pos, Vector3Scale(right, speed));
-        if (IsKeyDown(KEY_A)) player.transform.pos = Vector3Subtract(player.transform.pos, Vector3Scale(right, speed));
+        // GAME LOGIC: Check if player "touches" the goal
+        if (goalActive && Vector3Distance(p.position, goalPos) < 2.0f) {
+            goalActive = false;
+            p.itemsCollected++;
+        }
 
-        // 4. Update Camera for Rendering
-        // We use a separate 'viewTarget' so the camera can look up/down without moving up/down
-        Vector3 viewTarget = {
-            sinf(player.transform.yaw * DEG2RAD),
-            tanf(player.transform.pitch * DEG2RAD),
-            cosf(player.transform.yaw * DEG2RAD)
-        };
-
-        Camera3D camera = { 0 };
-        camera.position = player.transform.pos;
-        camera.target = Vector3Add(player.transform.pos, viewTarget);
-        camera.up = (Vector3){0, 1, 0};
-        camera.fovy = 75.0f;
-        camera.projection = CAMERA_PERSPECTIVE;
-
+        // --- DRAW ---
         BeginDrawing();
             ClearBackground(SKYBLUE);
+            
+            Camera3D camera = { p.position, Vector3Add(p.position, (Vector3){sinf(p.yaw*DEG2RAD), tanf(p.pitch*DEG2RAD), cosf(p.yaw*DEG2RAD)}), (Vector3){0, 1, 0}, 75, 0 };
+            
             BeginMode3D(camera);
-                DrawGrid(50, 1.0f);
-                for(int i = 0; i < myWorld.count; i++) {
-                    if(myWorld.entities[i].active) {
-                        DrawCube(myWorld.entities[i].transform.pos, 2, 2, 2, myWorld.entities[i].color);
+                DrawGrid(20, 1.0f);
+                if (goalActive) {
+                    DrawCube(goalPos, 2, 2, 2, GOLD);
+                    DrawCubeWires(goalPos, 2, 2, 2, ORANGE);
+                }
+            EndMode3D();
+
+            // UI: Show the player their progress
+            DrawRectangle(10, 10, 250, 80, Fade(BLACK, 0.5f));
+            DrawText(TextFormat("Items: %i", p.itemsCollected), 20, 20, 20, WHITE);
+            if (!goalActive) DrawText("GOAL REACHED!", 20, 50, 20, GREEN);
+
+            DrawCircle(640, 400, 4, WHITE);
+        EndDrawing();
+    }
+    CloseWindow();
+    return 0;
+}
